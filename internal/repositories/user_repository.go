@@ -1,7 +1,14 @@
 package repositories
 
-import "gorm.io/gorm"
+import (
+	"Threddit/internal/models"
+	"gorm.io/gorm"
+)
 
 type UserRepository struct {
 	*gorm.DB
+}
+
+func (s *UserRepository) CreateUser(u *models.User) error {
+	return nil
 }

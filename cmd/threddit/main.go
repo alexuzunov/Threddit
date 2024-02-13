@@ -29,6 +29,18 @@ func main() {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		handlers.Home(w)
 	})
+	r.Get("/login", func(w http.ResponseWriter, r *http.Request) {
+		handlers.LoginPage(w)
+	})
+	r.Get("/register", func(w http.ResponseWriter, r *http.Request) {
+		handlers.RegisterPage(w)
+	})
+	r.Post("api/users", func(w http.ResponseWriter, r *http.Request) {
+		handlers.Register(w, r)
+	})
+	r.Post("api/login", func(w http.ResponseWriter, r *http.Request) {
+		handlers.Login(w, r)
+	})
 
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
