@@ -12,12 +12,18 @@
             </div>
         </div>
         <ul class="navbar-nav ms-auto">
+            {{ if not .Logged }}
             <li class="nav-item">
                 <a class="nav-link fs-4" href="/login">Login</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link fs-4" href="/register">Sign Up</a>
             </li>
+            {{ else }}
+            <li class="nav-item">
+                <a class="nav-link fs-4" href="/logout">Logout</a>
+            </li>
+            {{ end }}
         </ul>
     </div>
 </nav>
