@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"Threddit/internal/repositories"
-	"errors"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"html/template"
@@ -28,15 +27,15 @@ func NewHandler(repository *repositories.Repository) *Handler {
 	h.Use(middleware.Logger)
 
 	h.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		h.Home(w, r)
+		h.Home(w)
 	})
 	h.Get("/login", func(w http.ResponseWriter, r *http.Request) {
-		users.LoginPage(w, r)
+		users.LoginPage(w)
 	})
 	h.Get("/register", func(w http.ResponseWriter, r *http.Request) {
-		users.RegisterPage(w, r)
+		users.RegisterPage(w)
 	})
-	h.Post("/api/users", func(w http.ResponseWriter, r *http.Request) {
+	h.Post("/api/register", func(w http.ResponseWriter, r *http.Request) {
 		users.Register(w, r)
 	})
 	h.Post("/api/login", func(w http.ResponseWriter, r *http.Request) {
@@ -48,20 +47,7 @@ func NewHandler(repository *repositories.Repository) *Handler {
 	return h
 }
 
-func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
-	logged := true
-	_, err := r.Cookie("token")
-
-	if err != nil {
-		if errors.Is(err, http.ErrNoCookie) {
-			logged = false
-		}
-	}
-
-	data := map[string]interface{}{
-		"Logged": logged,
-	}
-
+func (h *Handler) Home(w http.ResponseWriter) {
 	tmpl, err := template.ParseFiles(
 		templateRoot+"sections.html",
 		templateRoot+"home.html",
@@ -72,7 +58,7 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	err = tmpl.ExecuteTemplate(w, "home", data)
+	err = tmpl.ExecuteTemplate(w, "home", nil)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -23,18 +23,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func (h *UserHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
-	logged := true
-	_, err := r.Cookie("token")
-
-	if err != nil {
-		logged = false
-	}
-
-	data := map[string]interface{}{
-		"Logged": logged,
-	}
-
+func (h *UserHandler) LoginPage(w http.ResponseWriter) {
 	tmpl, err := template.ParseFiles(
 		templateRoot+"sections.html",
 		templateRoot+"login.html",
@@ -46,7 +35,7 @@ func (h *UserHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = tmpl.ExecuteTemplate(w, "login", data)
+	err = tmpl.ExecuteTemplate(w, "login", nil)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -103,18 +92,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
-func (h *UserHandler) RegisterPage(w http.ResponseWriter, r *http.Request) {
-	logged := true
-	_, err := r.Cookie("token")
-
-	if err != nil {
-		logged = false
-	}
-
-	data := map[string]interface{}{
-		"Logged": logged,
-	}
-
+func (h *UserHandler) RegisterPage(w http.ResponseWriter) {
 	tmpl, err := template.ParseFiles(
 		templateRoot+"sections.html",
 		templateRoot+"register.html",
@@ -126,7 +104,7 @@ func (h *UserHandler) RegisterPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = tmpl.ExecuteTemplate(w, "register", data)
+	err = tmpl.ExecuteTemplate(w, "register", nil)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
