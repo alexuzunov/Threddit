@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"Threddit/internal/helpers"
 	"Threddit/internal/models"
 	"Threddit/internal/repositories"
 	"errors"
@@ -17,13 +18,17 @@ type UserHandler struct {
 	repository *repositories.Repository
 }
 
-type Claims struct {
-	Username string      `json:"username"`
-	Role     models.Role `json:"role"`
-	jwt.RegisteredClaims
-}
+func (h *UserHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("token")
 
-func (h *UserHandler) LoginPage(w http.ResponseWriter) {
+	if err == nil {
+		_, err = helpers.VerifyToken(cookie.Value)
+
+		if err == nil {
+			http.Redirect(w, r, "/", http.StatusFound)
+		}
+	}
+
 	tmpl, err := template.ParseFiles(
 		templateRoot+"sections.html",
 		templateRoot+"login.html",
@@ -66,7 +71,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	expirationTime := time.Now().Add(2 * time.Hour)
 
-	claims := &Claims{
+	claims := &helpers.Claims{
 		Username: user.Username,
 		Role:     user.Role,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -75,7 +80,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(os.Getenv("SECRET_KEY"))
+	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET_KEY")))
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -92,7 +97,17 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
-func (h *UserHandler) RegisterPage(w http.ResponseWriter) {
+func (h *UserHandler) RegisterPage(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("token")
+
+	if err == nil {
+		_, err = helpers.VerifyToken(cookie.Value)
+
+		if err == nil {
+			http.Redirect(w, r, "/", http.StatusFound)
+		}
+	}
+
 	tmpl, err := template.ParseFiles(
 		templateRoot+"sections.html",
 		templateRoot+"register.html",
@@ -117,6 +132,7 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 	confirmPassword := r.FormValue("confirm_password")
 
 	if password != confirmPassword {
+		http.Error(w, "Passwords do not match.", http.StatusInternalServerError)
 		return
 	}
 
@@ -141,7 +157,7 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	expirationTime := time.Now().Add(2 * time.Hour)
 
-	claims := &Claims{
+	claims := &helpers.Claims{
 		Username: user.Username,
 		Role:     user.Role,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -162,6 +178,17 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		Value:   tokenString,
 		Expires: expirationTime,
 		Path:    "/",
+	})
+
+	http.Redirect(w, r, "/", http.StatusFound)
+}
+
+func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:   "token",
+		Value:  "",
+		MaxAge: -1,
+		Path:   "/",
 	})
 
 	http.Redirect(w, r, "/", http.StatusFound)

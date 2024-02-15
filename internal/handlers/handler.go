@@ -23,6 +23,8 @@ func NewHandler(repository *repositories.Repository) *Handler {
 	}
 
 	users := UserHandler{repository: repository}
+	subreddits := SubredditHandler{repository: repository}
+	posts := PostHandler{repository: repository}
 
 	h.Use(middleware.Logger)
 
@@ -30,16 +32,31 @@ func NewHandler(repository *repositories.Repository) *Handler {
 		h.Home(w)
 	})
 	h.Get("/login", func(w http.ResponseWriter, r *http.Request) {
-		users.LoginPage(w)
+		users.LoginPage(w, r)
 	})
 	h.Get("/register", func(w http.ResponseWriter, r *http.Request) {
-		users.RegisterPage(w)
+		users.RegisterPage(w, r)
 	})
 	h.Post("/api/register", func(w http.ResponseWriter, r *http.Request) {
 		users.Register(w, r)
 	})
 	h.Post("/api/login", func(w http.ResponseWriter, r *http.Request) {
 		users.Login(w, r)
+	})
+	h.Post("/api/logout", func(w http.ResponseWriter, r *http.Request) {
+		users.Logout(w, r)
+	})
+	h.Get("/subreddit/create", func(w http.ResponseWriter, r *http.Request) {
+		subreddits.SubredditCreatePage(w, r)
+	})
+	h.Post("/api/subreddits", func(w http.ResponseWriter, r *http.Request) {
+		subreddits.SubredditCreate(w, r)
+	})
+	h.Get("/post/create", func(w http.ResponseWriter, r *http.Request) {
+		posts.PostCreatePage(w, r)
+	})
+	h.Post("/api/posts", func(w http.ResponseWriter, r *http.Request) {
+		posts.PostCreate(w, r)
 	})
 
 	h.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
